@@ -79,15 +79,32 @@ def show_shopping_cart():
     # Make sure your function can also handle the case wherein no cart has
     # been added to the session
 
-    cart = session['cart']
-
-    melons = []
+    melon_list = []
     total = 0
 
-    for melon_id in cart:
-        melons.append(melons.get_by_id(melon_id))
+    if 'cart' in session:
 
-    return render_template("cart.html")
+        cart = session['cart']
+
+        for melon_id in cart:
+            # Retrieves melon object from dictionary by id
+            melon_obj = melons.get_by_id(melon_id)
+            
+            # Setting quantity to be equal to amount in cart
+            melon_obj.quantity = cart[melon_id]
+            
+            # Finds total price
+            melon_obj.total = melon_obj.quantity * melon_obj.price
+            
+            #Appends melon object
+            melon_list.append(melon_obj)
+
+            #Updates total
+            total += melon_obj.total
+        
+    return render_template("cart.html",
+                            total=total,
+                            melon_list=melon_list)
 
 
 @app.route("/add_to_cart/<melon_id>")
@@ -117,8 +134,6 @@ def add_to_cart(melon_id):
         session['cart'][melon_id] += 1
 
     #session['cart'] = session['cart'].get(melon_id, 0) + 1
-
-    print type(session['cart'])
 
     #flash("{} added to cart".format(melon_id[common_name]))
     flash("melon added")
